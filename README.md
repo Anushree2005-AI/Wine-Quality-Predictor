@@ -43,5 +43,5 @@ Approach
 
 Note: pip install pandas numpy scikit-learn matplotlib seaborn
 
-git clone https://github.com/your-username/wine-quality-prediction.git
+git clone https://github.com/Anushree2005-AI/Wine-Quality-Prediction.git
 cd wine-quality-prediction
