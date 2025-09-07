@@ -1,0 +1,945 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VinoMetrics - Wine Quality Predictor</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Raleway:wght@300;400;600&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #2E8B57;
+            --secondary: #D4AF37;
+            --accent: #8B4513;
+            --light: #F5F5F5;
+            --dark: #2F4F4F;
+            --success: #2E8B57;
+            --warning: #FF8C00;
+            --danger: #B22222;
+            --info: #4682B4;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Raleway', sans-serif;
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--light);
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            width: 100%;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            color: var(--secondary);
+        }
+        
+        h1, h2, h3, h4 {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+        }
+        
+        h1 {
+            color: var(--light);
+            font-size: 3.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            margin-bottom: 10px;
+        }
+        
+        .tagline {
+            color: var(--secondary);
+            font-style: italic;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+        }
+        
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 25px;
+            gap: 10px;
+        }
+        
+        .tab-btn {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--secondary);
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--light);
+        }
+        
+        .tab-btn.active {
+            background: var(--secondary);
+            color: var(--dark);
+        }
+        
+        .tab-content {
+            display: none;
+            width: 100%;
+        }
+        
+        .tab-content.active {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        
+        .form-container {
+            flex: 1;
+            width: 100%;
+            background: rgba(47, 79, 79, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        h2 {
+            color: var(--secondary);
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--secondary);
+            font-size: 2.2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: var(--light);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .input-with-icon {
+            position: relative;
+        }
+        
+        .input-with-icon i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary);
+            font-size: 1.2rem;
+        }
+        
+        .input-with-icon input {
+            padding-left: 50px;
+            background: rgba(245, 245, 245, 0.9);
+            border: 2px solid transparent;
+        }
+        
+        input {
+            width: 100%;
+            padding: 15px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: 'Raleway', sans-serif;
+        }
+        
+        input:focus {
+            border-color: var(--secondary);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.3);
+        }
+        
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .range-container input[type="range"] {
+            flex: 1;
+            height: 8px;
+            background: var(--light);
+            outline: none;
+            border-radius: 4px;
+        }
+        
+        .range-value {
+            min-width: 40px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--secondary);
+            font-size: 1.1rem;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--accent) 100%);
+            color: var(--dark);
+            border: none;
+            padding: 16px 30px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: block;
+            width: 100%;
+            margin-top: 25px;
+            font-family: 'Raleway', sans-serif;
+        }
+        
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn i {
+            margin-right: 10px;
+        }
+        
+        .prediction-result {
+            margin-top: 30px;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            background: rgba(245, 245, 245, 0.1);
+            transition: all 0.5s;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+        }
+        
+        .quality-meter {
+            width: 100%;
+            height: 35px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 18px;
+            overflow: hidden;
+            margin: 25px 0;
+            position: relative;
+        }
+        
+        .meter-fill {
+            height: 100%;
+            border-radius: 18px;
+            transition: width 1s ease-in-out;
+            background: linear-gradient(90deg, var(--danger) 0%, var(--warning) 50%, var(--success) 100%);
+        }
+        
+        .meter-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            color: var(--light);
+            font-size: 14px;
+        }
+        
+        .quality-badge {
+            display: inline-block;
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            margin-top: 20px;
+            font-size: 1.4rem;
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .quality-high {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .quality-medium {
+            background-color: var(--warning);
+            color: white;
+        }
+        
+        .quality-low {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .history-panel {
+            background: rgba(47, 79, 79, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 40px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+        
+        .history-list {
+            max-height: 250px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            align-items: center;
+        }
+        
+        .analysis-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            width: 100%;
+        }
+        
+        .analysis-chart {
+            background: rgba(47, 79, 79, 0.9);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(212, 175, 55, 0.3);
+            text-align: center;
+        }
+        
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            color: var(--light);
+            font-size: 1rem;
+            width: 100%;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .analysis-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            .tabs {
+                flex-wrap: wrap;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease forwards;
+        }
+        
+        .chart-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+            margin-top: 25px;
+        }
+        
+        @media (max-width: 992px) {
+            .chart-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--secondary);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+        
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-wine-bottle logo-icon"></i>
+                <h1>Wine Quality</h1>
+            </div>
+            <p class="tagline">Advanced Wine Quality Prediction with Interactive Analysis</p>
+            
+            <div class="tabs">
+                <button class="tab-btn active" data-tab="predictor">Quality Predictor</button>
+                <button class="tab-btn" data-tab="analysis">Wine Analysis</button>
+                <button class="tab-btn" data-tab="history">Prediction History</button>
+            </div>
+        </header>
+        
+        <!-- Quality Predictor Tab -->
+        <div class="tab-content active" id="predictor-tab">
+            <div class="form-container">
+                <h2>Wine Quality Prediction</h2>
+                <form id="prediction-form">
+                    <div class="form-group">
+                        <label for="fixed_acidity">Fixed Acidity (g/dm³)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-flask"></i>
+                            <input type="number" step="0.1" id="fixed_acidity" name="fixed acidity" placeholder="e.g., 7.4" required value="7.4">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="4" max="16" step="0.1" value="7.4" class="range-slider" data-target="fixed_acidity">
+                            <span class="range-value">7.4</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="volatile_acidity">Volatile Acidity (g/dm³)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-vial"></i>
+                            <input type="number" step="0.01" id="volatile_acidity" name="volatile acidity" placeholder="e.g., 0.7" required value="0.7">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="0.1" max="1.6" step="0.01" value="0.7" class="range-slider" data-target="volatile_acidity">
+                            <span class="range-value">0.7</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="citric_acid">Citric Acid (g/dm³)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-lemon"></i>
+                            <input type="number" step="0.01" id="citric_acid" name="citric acid" placeholder="e.g., 0.0" required value="0.0">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="0" max="1" step="0.01" value="0.0" class="range-slider" data-target="citric_acid">
+                            <span class="range-value">0.0</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="residual_sugar">Residual Sugar (g/dm³)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-cube"></i>
+                            <input type="number" step="0.1" id="residual_sugar" name="residual sugar" placeholder="e.g., 1.9" required value="1.9">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="0.5" max="16" step="0.1" value="1.9" class="range-slider" data-target="residual_sugar">
+                            <span class="range-value">1.9</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="chlorides">Chlorides (g/dm³)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-tint"></i>
+                            <input type="number" step="0.001" id="chlorides" name="chlorides" placeholder="e.g., 0.076" required value="0.076">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="0.01" max="0.2" step="0.001" value="0.076" class="range-slider" data-target="chlorides">
+                            <span class="range-value">0.076</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="free_sulfur_dioxide">Free Sulfur Dioxide (mg/dm³)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-wind"></i>
+                            <input type="number" step="1" id="free_sulfur_dioxide" name="free sulfur dioxide" placeholder="e.g., 11" required value="11">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="1" max="72" step="1" value="11" class="range-slider" data-target="free_sulfur_dioxide">
+                            <span class="range-value">11</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="total_sulfur_dioxide">Total Sulfur Dioxide (mg/dm³)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-smog"></i>
+                            <input type="number" step="1" id="total_sulfur_dioxide" name="total sulfur dioxide" placeholder="e.g., 34" required value="34">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="6" max="289" step="1" value="34" class="range-slider" data-target="total_sulfur_dioxide">
+                            <span class="range-value">34</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="density">Density (g/cm³)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-weight-hanging"></i>
+                            <input type="number" step="0.0001" id="density" name="density" placeholder="e.g., 0.9978" required value="0.9978">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="0.99" max="1.01" step="0.0001" value="0.9978" class="range-slider" data-target="density">
+                            <span class="range-value">0.9978</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ph">pH</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-chart-line"></i>
+                            <input type="number" step="0.01" id="ph" name="pH" placeholder="e.g., 3.51" required value="3.51">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="2.7" max="4" step="0.01" value="3.51" class="range-slider" data-target="ph">
+                            <span class="range-value">3.51</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sulphates">Sulphates (g/dm³)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-vial"></i>
+                            <input type="number" step="0.01" id="sulphates" name="sulphates" placeholder="e.g., 0.56" required value="0.56">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="0.3" max="2" step="0.01" value="0.56" class="range-slider" data-target="sulphates">
+                            <span class="range-value">0.56</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="alcohol">Alcohol (%)</label>
+                        <div class="input-with-icon">
+                            <i class="fas fa-glass-cheers"></i>
+                            <input type="number" step="0.1" id="alcohol" name="alcohol" placeholder="e.g., 9.4" required value="9.4">
+                        </div>
+                        <div class="range-container">
+                            <input type="range" min="8" max="15" step="0.1" value="9.4" class="range-slider" data-target="alcohol">
+                            <span class="range-value">9.4</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn"><i class="fas fa-search"></i> Predict Quality</button>
+                </form>
+                
+                <div class="prediction-result" id="prediction-result">
+                    <h3>Your Wine Quality Score:</h3>
+                    <div class="quality-meter">
+                        <div class="meter-fill" id="quality-meter" style="width: 65%;"></div>
+                    </div>
+                    <div class="meter-labels">
+                        <span>0</span>
+                        <span>5</span>
+                        <span>10</span>
+                    </div>
+                    <div class="quality-badge quality-medium" id="quality-badge">6.5/10</div>
+                    <p id="prediction-text">This wine has average quality with balanced characteristics.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Wine Analysis Tab -->
+        <div class="tab-content" id="analysis-tab">
+            <div class="analysis-container">
+                <div class="analysis-chart">
+                    <h2>Parameter Impact</h2>
+                    <p>How each parameter affects wine quality</p>
+                    <canvas id="parameter-impact-chart" style="max-height: 300px;"></canvas>
+                </div>
+                
+                <div class="analysis-chart">
+                    <h2>Quality Distribution</h2>
+                    <p>Distribution of wine quality scores</p>
+                    <canvas id="quality-distribution-chart" style="max-height: 300px;"></canvas>
+                </div>
+                
+                <div class="analysis-chart">
+                    <h2>Correlation Matrix</h2>
+                    <p>How parameters correlate with each other</p>
+                    <canvas id="correlation-matrix-chart" style="max-height: 300px;"></canvas>
+                </div>
+                
+                <div class="analysis-chart">
+                    <h2>Feature Importance</h2>
+                    <p>Which parameters matter most for quality</p>
+                    <canvas id="feature-importance-chart" style="max-height: 300px;"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Prediction History Tab -->
+        <div class="tab-content" id="history-tab">
+            <div class="history-panel">
+                <h2>Prediction History</h2>
+                <p>Your recent wine quality predictions:</p>
+                <div class="history-list" id="history-list">
+                    <div class="history-item">
+                        <span>Merlot #124</span>
+                        <span class="quality-badge quality-high">8.2/10</span>
+                        <span>2023-07-15</span>
+                    </div>
+                    <div class="history-item">
+                        <span>Chardonnay #087</span>
+                        <span class="quality-badge quality-medium">6.5/10</span>
+                        <span>2023-07-14</span>
+                    </div>
+                    <div class="history-item">
+                        <span>Pinot Noir #042</span>
+                        <span class="quality-badge quality-high">8.7/10</span>
+                        <span>2023-07-13</span>
+                    </div>
+                    <div class="history-item">
+                        <span>Cabernet #156</span>
+                        <span class="quality-badge quality-low">4.3/10</span>
+                        <span>2023-07-12</span>
+                    </div>
+                    <div class="history-item">
+                        <span>Sauvignon Blanc #098</span>
+                        <span class="quality-badge quality-medium">7.1/10</span>
+                        <span>2023-07-11</span>
+                    </div>
+                </div>
+                
+          
+    </div>
+
+    <script>
+        // Tab functionality
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab') + '-tab';
+                document.getElementById(tabId).classList.add('active');
+                updateVisualization();
+            });
+        });
+        
+        // Slider functionality
+        document.querySelectorAll('.range-slider').forEach(slider => {
+            const targetId = slider.getAttribute('data-target');
+            const targetInput = document.getElementById(targetId);
+            const valueDisplay = slider.nextElementSibling;
+            
+            slider.addEventListener('input', function() {
+                targetInput.value = this.value;
+                valueDisplay.textContent = this.value;
+                updateVisualization();
+            });
+            
+            targetInput.addEventListener('input', function() {
+                slider.value = this.value;
+                valueDisplay.textContent = this.value;
+                updateVisualization();
+            });
+        });
+        
+        // Form submission
+        document.getElementById('prediction-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            predictQuality();
+        });
+        
+        // Simulate prediction
+        function predictQuality() {
+            const alcohol = parseFloat(document.getElementById('alcohol').value);
+            const volatileAcidity = parseFloat(document.getElementById('volatile_acidity').value);
+            let score = 5 + (alcohol - 9.4) * 0.5 - (volatileAcidity - 0.7) * 3;
+            score = Math.max(0, Math.min(10, score)).toFixed(1);
+            
+            document.getElementById('quality-badge').textContent = `${score}/10`;
+            document.getElementById('quality-meter').style.width = `${score * 10}%`;
+            
+            const badge = document.getElementById('quality-badge');
+            badge.classList.remove('quality-high', 'quality-medium', 'quality-low');
+            
+            if (score >= 7) {
+                badge.classList.add('quality-high');
+                document.getElementById('prediction-text').textContent = "Excellent quality wine! This will pair well with fine foods.";
+            } else if (score >= 5) {
+                badge.classList.add('quality-medium');
+                document.getElementById('prediction-text').textContent = "Good quality wine with balanced characteristics.";
+            } else {
+                badge.classList.add('quality-low');
+                document.getElementById('prediction-text').textContent = "This wine could be improved with better balance of components.";
+            }
+            
+            const resultDiv = document.getElementById('prediction-result');
+            resultDiv.classList.remove('fade-in');
+            setTimeout(() => {
+                resultDiv.classList.add('fade-in');
+            }, 10);
+            
+            addToHistory(score);
+            updateVisualization();
+        }
+        
+        // Add to history function
+        function addToHistory(score) {
+            const historyList = document.getElementById('history-list');
+            const historyItem = document.createElement('div');
+            historyItem.className = 'history-item';
+            
+            const wines = ['Merlot', 'Cabernet', 'Chardonnay', 'Pinot Noir', 'Sauvignon Blanc', 'Syrah'];
+            const randomWine = wines[Math.floor(Math.random() * wines.length)];
+            const randomId = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            
+            const today = new Date();
+            const dateStr = today.toISOString().split('T')[0];
+            
+            historyItem.innerHTML = `
+                <span>${randomWine} #${randomId}</span>
+                <span class="quality-badge ${score >= 7 ? 'quality-high' : score >= 5 ? 'quality-medium' : 'quality-low'}">${score}/10</span>
+                <span>${dateStr}</span>
+            `;
+            
+            historyList.insertBefore(historyItem, historyList.firstChild);
+            
+            if (historyList.children.length > 5) {
+                historyList.removeChild(historyList.lastChild);
+            }
+        }
+        
+        // Export to CSV function
+        function exportToCSV() {
+            const historyList = document.getElementById('history-list').children;
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "Wine Name,Quality Score,Date\n";
+            
+            Array.from(historyList).forEach(item => {
+                const wineName = item.children[0].textContent;
+                const qualityScore = item.children[1].textContent;
+                const date = item.children[2].textContent;
+                csvContent += `"${wineName}","${qualityScore}","${date}"\n`;
+            });
+            
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement('a');
+            link.setAttribute('href', encodedUri);
+            link.setAttribute('download', 'prediction_history.csv');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+        
+        // Chart instances
+        let parameterImpactChart, qualityDistributionChart, correlationMatrixChart, featureImportanceChart;
+        
+        // Initialize charts
+        function initializeCharts() {
+            // Parameter Impact Chart
+            parameterImpactChart = new Chart(document.getElementById('parameter-impact-chart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Alcohol', 'Volatile Acidity', 'Sulphates', 'pH', 'Citric Acid', 'Residual Sugar', 'Chlorides', 'Free SO2', 'Total SO2', 'Density', 'Fixed Acidity'],
+                    datasets: [{
+                        label: 'Parameter Impact on Quality',
+                        data: [0.4, -0.3, 0.25, -0.1, 0.15, 0.05, -0.08, 0.03, -0.02, -0.05, 0.01],
+                        backgroundColor: ['#2E8B57', '#B22222', '#D4AF37', '#4682B4', '#8B4513', '#FF8C00', '#2F4F4F', '#98FB98', '#FFD700', '#00CED1', '#228B22'],
+                        borderColor: '#F5F5F5',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Impact on Quality Score', color: '#F5F5F5' },
+                            ticks: { color: '#F5F5F5' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Parameters', color: '#F5F5F5' },
+                            ticks: { color: '#F5F5F5' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Parameter Impact on Wine Quality', color: '#F5F5F5' }
+                    }
+                }
+            });
+            
+            // Quality Distribution Chart
+            qualityDistributionChart = new Chart(document.getElementById('quality-distribution-chart'), {
+                type: 'bar',
+                data: {
+                    labels: ['3', '4', '5', '6', '7', '8', '9'],
+                    datasets: [{
+                        label: 'Quality Score Distribution',
+                        data: [10, 50, 200, 500, 300, 100, 20],
+                        backgroundColor: '#2E8B57',
+                        borderColor: '#F5F5F5',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Number of Wines', color: '#F5F5F5' },
+                            ticks: { color: '#F5F5F5' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Quality Score', color: '#F5F5F5' },
+                            ticks: { color: '#F5F5F5' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Wine Quality Distribution', color: '#F5F5F5' }
+                    }
+                }
+            });
+            
+            // Correlation Matrix Chart
+            correlationMatrixChart = new Chart(document.getElementById('correlation-matrix-chart'), {
+                type: 'scatter',
+                data: {
+                    datasets: [
+                        {
+                            label: 'Alcohol vs Quality',
+                            data: [{x: 0.4, y: 1}],
+                            backgroundColor: '#2E8B57'
+                        },
+                        {
+                            label: 'Volatile Acidity vs Quality',
+                            data: [{x: -0.3, y: 2}],
+                            backgroundColor: '#B22222'
+                        },
+                        {
+                            label: 'Density vs Alcohol',
+                            data: [{x: -0.7, y: 3}],
+                            backgroundColor: '#D4AF37'
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Correlation Coefficient', color: '#F5F5F5' },
+                            ticks: { color: '#F5F5F5' },
+                            min: -1,
+                            max: 1
+                        },
+                        y: {
+                            title: { display: true, text: 'Parameter Pair', color: '#F5F5F5' },
+                            ticks: {
+                                color: '#F5F5F5',
+                                callback: function(value) {
+                                    return ['', 'Alcohol vs Quality', 'Volatile Acidity vs Quality', 'Density vs Alcohol'][value] || '';
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        title: { display: true, text: 'Correlation Matrix Highlights', color: '#F5F5F5' }
+                    }
+                }
+            });
+            
+            // Feature Importance Chart
+            featureImportanceChart = new Chart(document.getElementById('feature-importance-chart'), {
+                type: 'bar',
+                data: {
+                    labels: ['Alcohol', 'Volatile Acidity', 'Sulphates', 'pH', 'Citric Acid', 'Residual Sugar', 'Chlorides', 'Free SO2', 'Total SO2', 'Density', 'Fixed Acidity'],
+                    datasets: [{
+                        label: 'Feature Importance',
+                        data: [0.35, 0.25, 0.15, 0.1, 0.08, 0.05, 0.04, 0.03, 0.02, 0.02, 0.01],
+                        backgroundColor: ['#2E8B57', '#B22222', '#D4AF37', '#4682B4', '#8B4513', '#FF8C00', '#2F4F4F', '#98FB98', '#FFD700', '#00CED1', '#228B22'],
+                        borderColor: '#F5F5F5',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'Importance Score', color: '#F5F5F5' },
+                            ticks: { color: '#F5F5F5' }
+                        },
+                        x: {
+                            title: { display: true, text: 'Parameters', color: '#F5F5F5' },
+                            ticks: { color: '#F5F5F5' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Feature Importance for Wine Quality', color: '#F5F5F5' }
+                    }
+                }
+            });
+        }
+        
+        // Update visualization
+        function updateVisualization() {
+            if (document.getElementById('analysis-tab').classList.contains('active')) {
+                const alcohol = parseFloat(document.getElementById('alcohol').value);
+                const volatileAcidity = parseFloat(document.getElementById('volatile_acidity').value);
+                
+                if (parameterImpactChart) {
+                    parameterImpactChart.data.datasets[0].data[0] = 0.4 + (alcohol - 9.4) * 0.05;
+                    parameterImpactChart.data.datasets[0].data[1] = -0.3 - (volatileAcidity - 0.7) * 0.1;
+                    parameterImpactChart.update();
+                }
+                
+                console.log('Updating charts with form values');
+            }
+        }
+        
+        // Initialize charts on load
+        window.addEventListener('load', function() {
+            initializeCharts();
+            predictQuality();
+        });
+    </script>
+</body>
+</html>
+```
